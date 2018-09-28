@@ -8,7 +8,7 @@
         <Label
             FontSize="Large"
             FontAttributes="Bold"
-            Text="BleAsier" 
+            Text="MainPage" 
             HorizontalOptions="Center"/>
     </StackLayout>
 

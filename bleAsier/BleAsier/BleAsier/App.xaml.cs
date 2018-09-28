@@ -1,19 +1,20 @@
-﻿using System;
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
-
-[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
-namespace BleAsier
+﻿namespace BleAsier
 {
+    using Views;
+    using Xamarin.Forms;
+
     public partial class App : Application
     {
+        #region Constructors
         public App()
         {
             InitializeComponent();
 
-            MainPage = new MainPage();
+            MainPage = new NavigationPage(new ScanPage());
         }
+        #endregion
 
+        #region Methods
         protected override void OnStart()
         {
             // Handle when your app starts
@@ -28,5 +29,6 @@ namespace BleAsier
         {
             // Handle when your app resumes
         }
+        #endregion
     }
 }

@@ -8,6 +8,7 @@
     using System.Collections.ObjectModel;
     using System.Diagnostics;
     using System.Text;
+    using System.Threading.Tasks;
     using Xamarin.Forms;
     using Xamarin.Forms.Xaml;
 
@@ -73,8 +74,21 @@
             {
                 //txtBle.Text = "Connection lost";
                 Debug.WriteLine($"LOST CONNECTION: {e.Device.Name}");
+                /*
+                btnGetServices.IsEnabled = false;
+                btnGetCharacteristics.IsEnabled = false;
+                dimSlider.IsEnabled = false;
+                btnReadCharacteristics.IsEnabled = false;
+                btnWriteOffCharacteristics.IsEnabled = false;
+                btnWriteOnCharacteristics.IsEnabled = false;
+                btnDisconnect.IsEnabled = false;
+                */
             };
 
+            dimSlider.PropertyChanged += (s, e) =>
+            {
+                Debug.WriteLine($"SLIDER: {dimSlider.Value}");
+            };
         }
 
         private void BtnStatus_Clicked(object sender, EventArgs e)
@@ -84,14 +98,16 @@
             Debug.WriteLine($"BLE STATUS: {state.ToString()}");
             if (state == BluetoothState.On)
             {
-                txtBle.Text = "Your Bluetooth is On !!";
+                txtBle.Text = "Bluetooth is ON\r\nNumber of connected devices: " + adapter.ConnectedDevices.Count.ToString();
             }
             if (state == BluetoothState.Off)
             {
                 //txtBle.BackgroundColor = Color.Red;
                 //txtBle.TextColor = Color.White;
-                txtBle.Text = "Your Bluetooth is Off !!";
+                txtBle.Text = "Bluetooth is OFF";
             }
+            
+
         }
 
         private async void BtnScan_Clicked(object sender, EventArgs e)
@@ -141,6 +157,14 @@
                 await adapter.StopScanningForDevicesAsync();
                 txtBle.Text = "";
             }
+
+            if (device != null)
+            {
+                btnConnect.IsEnabled = true;
+                //btnKnowConnect.IsEnabled = true;
+                //entryGUID.Text = device.Id.ToString();
+            }
+
             /*
             try
             {
@@ -157,38 +181,65 @@
 
         private async void BtnConnect_Clicked(object sender, EventArgs a)
         {
-            try
+            if (device != null)
             {
-                if (device != null)
+                try
                 {
                     await adapter.ConnectToDeviceAsync(device);
                     //await _adapter.ConnectToKnownDeviceAsync(guid, cancellationToken);
                     //await DisplayAlert("Connected", "Status:" + device.State, "Accept");
                     txtBle.Text = device.State.ToString() + " (" + device.Name.ToString() + ") : " + device.Id;
+                    btnGetServices.IsEnabled = true;
+                    btnGetCharacteristics.IsEnabled = true;
+                    dimSlider.IsEnabled = true;
+                    btnReadCharacteristics.IsEnabled = true;
+                    btnWriteOffCharacteristics.IsEnabled = true;
+                    btnWriteOnCharacteristics.IsEnabled = true;
+                    btnDisconnect.IsEnabled = true;
                 }
-                else
+                catch (DeviceConnectionException ex)
                 {
-                    await DisplayAlert("Warning", "No device selected !", "Accept");
+                    // ... could not connect to device
+                    await DisplayAlert("Error", ex.Message.ToString(), "Accept");
                 }
             }
-            catch (DeviceConnectionException ex)
+            else
             {
-                // ... could not connect to device
-                await DisplayAlert("Error", ex.Message.ToString(), "Accept");
+                await DisplayAlert("Warning", "No device selected !", "Accept");
             }
+        }
+
+        private async Task WaitAndExecute(int milisec, Action actionToExecute)
+        {
+            await Task.Delay(milisec);
+            actionToExecute();
         }
 
         private async void BtnKnowConnect_Clicked(object sender, EventArgs e)
         {
             TimeSpan scantime;
             DateTime datetime = DateTime.Now;
-            Guid myGuid = new Guid("00000000-0000-0000-0000-000b57ef2d90"); // Public Address Silicon Labs peripheral
+            //Guid myGuid = new Guid("00000000-0000-0000-0000-000b57ef2d90"); // Public Address Silicon Labs peripheral
 
+            if (string.IsNullOrEmpty(entryGUID.Text))
+            {
+                return;
+            }
+            Guid myGuid = Guid.Parse(entryGUID.Text);
             try
             {
-                await adapter.ConnectToKnownDeviceAsync(myGuid);
-                scantime = DateTime.Now - datetime;
-                txtBle.Text = adapter.ConnectedDevices.Count.ToString() + " (" + scantime.ToString() + ")";
+                device = await adapter.ConnectToKnownDeviceAsync(myGuid);
+                //scantime = DateTime.Now - datetime;
+                //txtBle.Text = adapter.ConnectedDevices.Count.ToString() + " (" + scantime.ToString() + ")";
+                txtBle.Text = device.State.ToString() + " (" + device.Name.ToString() + ") : " + device.Id;
+                btnGetServices.IsEnabled = true;
+                btnGetCharacteristics.IsEnabled = true;
+                dimSlider.IsEnabled = true;
+                btnReadCharacteristics.IsEnabled = true;
+                btnWriteOffCharacteristics.IsEnabled = true;
+                btnWriteOnCharacteristics.IsEnabled = true;
+                btnDisconnect.IsEnabled = true;
+                //await this.WaitAndExecute(2000, ()=>DisplayAlert("Alert", "This fired after 2 seconds", "Ok"));
             }
             catch (DeviceConnectionException ex)
             {
@@ -203,21 +254,32 @@
             if (adapter.ConnectedDevices.Count > 0)
             {
                 cdevice = adapter.ConnectedDevices[0];
-                try
+                if (cdevice != null)
                 {
-                    if (cdevice != null)
+                    try
                     {
                         await adapter.DisconnectDeviceAsync(cdevice);
+                        txtBle.Text = cdevice.State.ToString();
+                        if (adapter.ConnectedDevices.Count == 0)
+                        {
+                            btnGetServices.IsEnabled = false;
+                            btnGetCharacteristics.IsEnabled = false;
+                            dimSlider.IsEnabled = false;
+                            btnReadCharacteristics.IsEnabled = false;
+                            btnWriteOffCharacteristics.IsEnabled = false;
+                            btnWriteOnCharacteristics.IsEnabled = false;
+                            btnDisconnect.IsEnabled = false;
+                        }
                     }
-                    else
+                    catch (DeviceConnectionException ex)
                     {
-                        await DisplayAlert("Warning", "No devices conected !", "Accept");
+                        // ... could not disconnect
+                        await DisplayAlert("Error", ex.Message.ToString(), "Accept");
                     }
                 }
-                catch (DeviceConnectionException ex)
+                else
                 {
-                    // ... could not disconnect
-                    await DisplayAlert("Error", ex.Message.ToString(), "Accept");
+                    await DisplayAlert("Warning", "No devices conected !", "Accept");
                 }
             }
         }
@@ -228,14 +290,16 @@
         private async void BtnGetServices_Clicked(object sender, EventArgs e)
         {
             var builder = new StringBuilder();
-            Guid myUuid = new Guid("166e3275-1b3a-465c-b0e1-3cbc24c5acbe"); // Public Address Silicon Labs peripheral
-            Services = await device.GetServicesAsync();
-            // Service = await device.GetServiceAsync(Guid.Parse("guid")); 
-            //or we call the Guid of selected Device
-            //Service = await device.GetServiceAsync(device.Id);
-            Service = await device.GetServiceAsync(myUuid);
+            //Guid myServiceUuid = new Guid("166e3275-1b3a-465c-b0e1-3cbc24c5acbe"); // UUID of a known service (Dimming Value Service)
+            try
+            {
+                Service = await device.GetServiceAsync(myServiceUuid);
+            }
+            catch { return; }
             //txtBle.Text = Service.Id.ToString();
             //txtBle.Text = Service.Name.ToString();
+
+            Services = await device.GetServicesAsync(); // Get all services of the device
             /*
             if (Services.Count > -1)
             {
@@ -254,6 +318,7 @@
             {
                 builder.Append(item.Name.ToString() + ":\r\n " + item.Id.ToString() + "\r\n");
             }
+            builder.Append("FIN CADENA\r\n");
             txtBle.Text = builder.ToString();
         }
 
@@ -262,12 +327,36 @@
         /// Get Characteristics
         private async void BtnGetcharacters_Clicked(object sender, EventArgs e)
         {
-            Characteristics = await Service.GetCharacteristicsAsync();
-            Guid idGuid = Guid.Parse("guid");
-            Characteristic = await Service.GetCharacteristicAsync(idGuid);
-            //  Characteristic.CanRead
+            var builder = new StringBuilder();
+            //Guid myServiceUuid = new Guid("166e3275-1b3a-465c-b0e1-3cbc24c5acbe"); // UUID of a known service (Dimming Service)
+            try
+            {
+                Service = await device.GetServiceAsync(myServiceUuid);
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Alert", ex.Message, "Ok");
+                return;
+            }
+            //Guid myCharacteristicUuid = Guid.Parse("fe68847f-59ec-4429-9701-74423a4a7ad4"); // UUID of a known characteristic (Dimming Value)
+            try
+            {
+                Characteristic = await Service.GetCharacteristicAsync(myCharacteristicUuid);
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Alert", ex.Message, "Ok");
+                return;
+            }
+            Characteristics = await Service.GetCharacteristicsAsync();              // Get all Characteristics of the Service
+            foreach (var item in Characteristics)
+            {
+                builder.Append(item.Name.ToString() + ":\r\n " + item.Id.ToString() + "\r\n");
+            }
+            builder.Append("FIN CADENA\r\n");
+            txtBle.Text = builder.ToString();
         }
-
+        /*
         IDescriptor descriptor;
         IList<IDescriptor> descriptors;
         private async void btnDescriptors_Clicked(object sender, EventArgs e)
@@ -281,13 +370,107 @@
             var bytes = await descriptor.ReadAsync();
             await descriptor.WriteAsync(bytes);
         }
+        */
+        byte[] data = { };
 
-        private async void btnGetRW_Clicked(object sender, EventArgs e)
+        private async void BtnGetR_Clicked(object sender, EventArgs e)
         {
-            var bytes = await Characteristic.ReadAsync();
-            await Characteristic.WriteAsync(bytes);
+            //Guid myServiceUuid = new Guid("166e3275-1b3a-465c-b0e1-3cbc24c5acbe"); // UUID of a known service (Dimming Service)
+            try { Service = await device.GetServiceAsync(myServiceUuid); }
+            catch { return; }
+            //Guid myCharacteristicUuid = Guid.Parse("fe68847f-59ec-4429-9701-74423a4a7ad4"); // UUID of a known characteristic (Dimming Value)
+            try { Characteristic = await Service.GetCharacteristicAsync(myCharacteristicUuid); }
+            catch { return; }
+
+            if (Characteristic.CanRead)
+            {
+                try
+                {
+                    data = await Characteristic.ReadAsync();
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Debug.WriteLine("InvalidOperationException reading the characteristics value: " + ex.Message);
+                }
+                catch (CharacteristicReadException ex)
+                {
+                    Debug.WriteLine("CharacteristicReadException reading the characteristics value: " + ex.Message);
+                }
+                catch (ArgumentNullException ex)
+                {
+                    Debug.WriteLine("Excpetion in reading the characteristic " + Characteristic.Id);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+
+                txtBle.Text = data[0].ToString();
+                Debug.WriteLine($"CHARACTERISTIC READ: {data}");
+            }
+            else
+            {
+                Debug.WriteLine($"CAN'T READ CHARACTERISTIC");
+            }
         }
 
+        private async void BtnWOff_Clicked(object sender, EventArgs e)
+        {
+            //Guid myServiceUuid = new Guid("166e3275-1b3a-465c-b0e1-3cbc24c5acbe"); // UUID of a known service (Dimming Service)
+            try { Service = await device.GetServiceAsync(myServiceUuid); }
+            catch { return; }
+            //Guid myCharacteristicUuid = Guid.Parse("fe68847f-59ec-4429-9701-74423a4a7ad4"); // UUID of a known characteristic (Dimming Value)
+            try { Characteristic = await Service.GetCharacteristicAsync(myCharacteristicUuid); }
+            catch { return; }
+
+            if (Characteristic.CanWrite)
+            {
+                var result = await Characteristic.WriteAsync(new byte[] { 0 });
+                if (!result)
+                {
+                    Debug.WriteLine("CAN'T WRITE TO CHARACTERISTIC");
+                }
+                else
+                {
+                    Debug.WriteLine("CHARACTERISTIC WRITTEN");
+                }
+            }
+        }
+
+        private async void BtnWOn_Clicked(object sender, EventArgs e)
+        {
+            //Guid myServiceUuid = new Guid("166e3275-1b3a-465c-b0e1-3cbc24c5acbe"); // UUID of a known service (Dimming Service)
+            try
+            {
+                Service = await device.GetServiceAsync(myServiceUuid);
+            }
+            catch (Exception ex)
+            {
+                return;
+            }
+            //Guid myCharacteristicUuid = Guid.Parse("fe68847f-59ec-4429-9701-74423a4a7ad4"); // UUID of a known characteristic (Dimming Value)
+            try
+            {
+                Characteristic = await Service.GetCharacteristicAsync(myCharacteristicUuid);
+            }
+            catch
+            {
+                return;
+            }
+            if (Characteristic.CanWrite)
+            {
+                var result = await Characteristic.WriteAsync(new byte[] { 255 });
+                if (!result)
+                {
+                    Debug.WriteLine("CAN'T WRITE TO CHARACTERISTIC");
+                }
+                else
+                {
+                    Debug.WriteLine("CHARACTERISTIC WRITTEN");
+                }
+            }
+        }
+        /*
         private async void btnUpdate_Clicked(object sender, EventArgs e)
         {
             Characteristic.ValueUpdated += (o, args) =>
@@ -296,12 +479,50 @@
             };
             await Characteristic.StartUpdatesAsync();
         }
+        */
         /*
         private void txtErrorBle_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
 
         }
         */
+        Guid myServiceUuid = new Guid("166e3275-1b3a-465c-b0e1-3cbc24c5acbe"); // UUID of a known service (Dimming Service)
+        Guid myCharacteristicUuid = Guid.Parse("fe68847f-59ec-4429-9701-74423a4a7ad4"); // UUID of a known characteristic (Dimming Value)
+
+        private async void OnSliderChanged(object sender, ValueChangedEventArgs args)
+        {
+            if (Service == null)
+            {
+                try { Service = await device.GetServiceAsync(myServiceUuid); }
+                catch { return; }
+            }
+            if (Characteristic == null)
+            {
+                try { Characteristic = await Service.GetCharacteristicAsync(myCharacteristicUuid); }
+                catch { return; }
+            }
+            double value = args.NewValue;
+            //string valor = String.Format("{0:F0}", value);
+            int iValue = (int)Math.Round(value);
+            //int iValue = Convert.ToByte(value);
+            sLabel.Text = iValue.ToString();
+            byte[] sliderValue = BitConverter.GetBytes(iValue);
+            if (Characteristic.CanWrite)
+            {
+                try
+                {
+                    var res = await Characteristic.WriteAsync(sliderValue);
+                }
+                catch (Exception ex)
+                {
+                    //await DisplayAlert("Alert", ex.Message ,"Ok");
+                }
+            }
+            //sLabel.Text = BitConverter.ToString(valorb);
+            //var characteristic = await GetCharacteristicById(parameters, Guid.Parse("00002A87-0000-1000-8000-00805f9b34fb"));
+            //byte[] array = Encoding.UTF8.GetBytes(UserDataMock.Email);
+            //characteristic.WriteAsync(array);
+        }
     }
 }
 
@@ -325,5 +546,38 @@ var device = Plugin.BLE.CrossBluetoothLE.Current.Adapter.GetSystemConnectedOrPai
 if (device != null)
 {
     await Plugin.BLE.CrossBluetoothLE.Current.Adapter.DisconnectDeviceAsync(device);
+}
+*/
+
+/*
+class Program
+{
+    static void Main(string[] args)
+    {
+        Console.WriteLine("Double and byte arrays conversion sample.");
+        // Create double to a byte array
+        double d = 12.09;
+        Console.WriteLine("Double value: " + d.ToString());
+        byte[] bytes = ConvertDoubleToByteArray(d);
+        Console.WriteLine("Byte array value:");
+        Console.WriteLine(BitConverter.ToString(bytes));
+
+        Console.WriteLine("Byte array back to double:");
+        // Create byte array to double
+        double dValue = ConvertByteArrayToDouble(bytes);
+        Console.WriteLine(dValue.ToString());
+        Console.ReadLine();
+    }
+
+    public static byte[] ConvertDoubleToByteArray(double d)
+    {
+        return BitConverter.GetBytes(d);
+    }
+
+    public static double ConvertByteArrayToDouble(byte[] b)
+    {
+        return BitConverter.ToDouble(b, 0);
+    }
+
 }
 */

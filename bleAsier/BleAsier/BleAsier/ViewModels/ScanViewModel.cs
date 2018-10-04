@@ -35,7 +35,7 @@ namespace BleAsier.ViewModels
         {
             if (PropertyChanged != null)
             {
-                PropertyChanged(this, new PropertyChangedEventArgs(caller));
+                this.PropertyChanged(this, new PropertyChangedEventArgs(caller));
             }
         }
     }

@@ -3,16 +3,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="BleAsier.Views.ScanPage"
              BindingContext="{Binding Main, Source={StaticResource Locator}}"
-             Title="Scan">
+             Title="DINUY - Bluetooth LE">
     <ContentPage.Content>
         <StackLayout
             Padding="10,10,10,20">
             <Label 
-                FontSize="Medium"
                 FontAttributes="None"
+                FontSize="Micro"
                 Text="Bluetooth LE devices"
                 LineBreakMode="NoWrap"
-                HorizontalOptions="CenterAndExpand"
+                HorizontalOptions="Start"
                 VerticalOptions="Start"/>
             <ListView
                 x:Name="lv"
@@ -45,11 +45,12 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <ScrollView>
+            <ScrollView
+                VerticalOptions="Fill">
                 <Label
                     x:Name="txtBle"
                     BackgroundColor="LightGray"
-                    HeightRequest="250"
+                    HeightRequest="300"
                     Text="">
                 </Label>
             </ScrollView>
@@ -63,18 +64,9 @@
                     Clicked="BtnConnect_Clicked"
                     HeightRequest="46"
                     HorizontalOptions="FillAndExpand"
+                    IsEnabled="False"
                     TextColor="White"
                     Text="Connect">
-                </Button>
-                <Button
-                    x:Name="btnKnowConnect"
-                    BackgroundColor="Olive"
-                    BorderRadius="23"
-                    Clicked="BtnKnowConnect_Clicked"
-                    HeightRequest="46"
-                    HorizontalOptions="FillAndExpand"
-                    TextColor="White"
-                    Text="Connect Know">
                 </Button>
                 <Button
                     x:Name="btnDisconnect"
@@ -83,9 +75,34 @@
                     Clicked="BtnDisconnect_Clicked"
                     HeightRequest="46"
                     HorizontalOptions="FillAndExpand"
+                    IsEnabled="False"
                     TextColor="White"
                     Text="Disconnect">
                 </Button>
+            </StackLayout>
+            <StackLayout
+                Orientation="Horizontal"
+                VerticalOptions="End">
+                <Button
+                    x:Name="btnKnowConnect"
+                    BackgroundColor="Olive"
+                    BorderRadius="23"
+                    Clicked="BtnKnowConnect_Clicked"
+                    HeightRequest="46"
+                    HorizontalOptions="Start"
+                    IsEnabled="True"
+                    TextColor="White"
+                    Text="Connect Guid"
+                    VerticalOptions="Center">
+                </Button>
+                <Entry
+                    x:Name="entryGUID"
+                    FontSize="Micro"
+                    HorizontalOptions="FillAndExpand"
+                    Placeholder="Enter Public Address"
+                    Text="00000000-0000-0000-0000-000b57ef2d90"
+                    VerticalOptions="Center">
+                </Entry>
             </StackLayout>
             <StackLayout
                 Orientation="Horizontal"
@@ -97,6 +114,7 @@
                     Clicked="BtnGetServices_Clicked"
                     HeightRequest="46"
                     HorizontalOptions="FillAndExpand"
+                    IsEnabled="False"
                     TextColor="White"
                     Text="Get Service">
                 </Button>
@@ -107,12 +125,13 @@
                     Clicked="BtnGetcharacters_Clicked"
                     HeightRequest="46"
                     HorizontalOptions="FillAndExpand"
+                    IsEnabled="False"
                     TextColor="White"
-                    Text="Get Char.">
+                    Text="Get Ch">
                 </Button>
                 <Button
                     x:Name="btnStatus"
-                    BackgroundColor="Purple"
+                    BackgroundColor="OrangeRed"
                     BorderRadius="23"
                     Clicked="BtnStatus_Clicked"
                     HeightRequest="46"
@@ -121,17 +140,72 @@
                     Text="Ble Status">
                 </Button>
             </StackLayout>
-            <Button
-                x:Name="btnScan"
-                BackgroundColor="Orange"
-                BorderRadius="23"
-                Clicked="BtnScan_Clicked"
-                HeightRequest="46"
-                TextColor="White"
-                Text="Scan"
-                VerticalOptions="End"
-                WidthRequest="30">
-            </Button>
+            <StackLayout
+                Orientation="Horizontal">
+                <Slider
+                    x:Name="dimSlider"
+                    Minimum="0"
+                    Maximum="255"
+                    HorizontalOptions="FillAndExpand"
+                    IsEnabled="False"
+                    ValueChanged="OnSliderChanged">
+                </Slider>
+                <Label
+                    x:Name="sLabel"                    
+                    HorizontalOptions="End"
+                    WidthRequest="50"
+                    XAlign="End"
+                    Text="000">
+                </Label>
+            </StackLayout>
+            <StackLayout
+                Orientation="Horizontal"
+                VerticalOptions="End">
+                <Button
+                    x:Name="btnScan"
+                    BackgroundColor="Orange"
+                    BorderRadius="23"
+                    Clicked="BtnScan_Clicked"
+                    HeightRequest="46"                    
+                    HorizontalOptions="FillAndExpand"
+                    TextColor="White"
+                    Text="Scan">
+                </Button>
+                <Button
+                    x:Name="btnReadCharacteristics"
+                    BackgroundColor="CadetBlue"
+                    BorderRadius="23"
+                    Clicked="BtnGetR_Clicked"
+                    HeightRequest="46"                    
+                    HorizontalOptions="FillAndExpand"
+                    IsEnabled="False"
+                    TextColor="White"
+                    Text="Read">
+                </Button>
+                <Button
+                    x:Name="btnWriteOffCharacteristics"
+                    BackgroundColor="CadetBlue"
+                    BorderRadius="23"
+                    Clicked="BtnWOff_Clicked"
+                    HeightRequest="46"
+                    IsEnabled="False"
+                    TextColor="White"
+                    WidthRequest="50"
+                    Text="Off">
+                </Button>
+                <Button
+                    x:Name="btnWriteOnCharacteristics"
+                    BackgroundColor="CadetBlue"
+                    BorderRadius="23"
+                    Clicked="BtnWOn_Clicked"
+                    HeightRequest="46"
+                    IsEnabled="False"
+                    TextColor="White"
+                    WidthRequest="46"
+                    Text="On">
+                </Button>
+
+            </StackLayout>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

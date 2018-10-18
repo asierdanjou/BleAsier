@@ -11,6 +11,7 @@
             InitializeComponent();
 
             MainPage = new NavigationPage(new ScanPage());
+
         }
         #endregion
 

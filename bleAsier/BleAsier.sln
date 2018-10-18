@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BleAsier.Android", "BleAsie
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BleAsier.iOS", "BleAsier\BleAsier.iOS\BleAsier.iOS.csproj", "{53B057AF-213A-4AB8-B65E-F91A9B1F571E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BleAsier", "BleAsier\BleAsier\BleAsier.csproj", "{4A8F14D0-853A-42FB-AD1E-70C659A8C6B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BleAsier", "BleAsier\BleAsier\BleAsier.csproj", "{4A8F14D0-853A-42FB-AD1E-70C659A8C6B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,7 +54,6 @@ Global
 		{1A2A1D42-1B89-4319-94AB-79FE0CE28E40}.Debug|iPhoneSimulator.Deploy.0 = Debug|Any CPU
 		{1A2A1D42-1B89-4319-94AB-79FE0CE28E40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A2A1D42-1B89-4319-94AB-79FE0CE28E40}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1A2A1D42-1B89-4319-94AB-79FE0CE28E40}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{1A2A1D42-1B89-4319-94AB-79FE0CE28E40}.Release|iPhone.ActiveCfg = Release|Any CPU
 		{1A2A1D42-1B89-4319-94AB-79FE0CE28E40}.Release|iPhone.Build.0 = Release|Any CPU
 		{1A2A1D42-1B89-4319-94AB-79FE0CE28E40}.Release|iPhone.Deploy.0 = Release|Any CPU

@@ -132,6 +132,9 @@
                     adapter.ScanTimeout = 5000;
                     adapter.ScanMode = ScanMode.Balanced;
                     await adapter.StartScanningForDevicesAsync();
+                    // Filtrar por el servicio de nuestro custom profile (lo tiene que incluir el advertising del periferico)
+                    //await adapter.StartScanningForDevicesAsync(new Guid[] { Guid.Parse("166e3275-1b3a-465c-b0e1-3cbc24c5acbe") }); 
+                    // You are calling StartScan with a guid as a parameter. You have to make sure that the peripheral includes the service guid in it's advertisement package.
                     //txtBle.Text = "";
                 }
             }
